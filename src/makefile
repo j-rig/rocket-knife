@@ -95,6 +95,26 @@ $(MACBIN)/junzip_dump: $(OBJ)/junzip_dump.o $(OBJ)/junzip.a
 	$(X86GCC) -DHAVE_PUFF -I./3rd/junzip $(X86CFLAGS) \
 	-o $@ $^
 
+#sqlite
+###########################################################################
+./3rd/sqlite-amalgamation/%.c: ./3rd/sqlite-amalgamation/%.h
+
+SQLITEDEF= -DSQLITE_ENABLE_FTS3
+SQLITEDEF+= -DSQLITE_ENABLE_FTS5
+SQLITEDEF+= -DSQLITE_ENABLE_RTREE
+SQLITEDEF+= -DSQLITE_ENABLE_DBSTAT_VTAB
+SQLITEDEF+= -DSQLITE_ENABLE_JSON1
+SQLITEDEF+= -DSQLITE_ENABLE_RBU
+SQLITEDEF+= -DSQLITE_ENABLE_SESSION
+
+$(OBJ)/%.o: ./3rd/sqlite-amalgamation/%.c
+	$(X86GCC) $(SQLITEDEF) -I./3rd/sqlite-amalgamation $(X86CFLAGS) -o $@ -c $<
+
+SQLITELIBO= sqlite3.o
+
+$(OBJ)/sqlite3.a: $(addprefix $(OBJ)/, $(SQLITELIBO))
+	ar rvs $@ $^
+
 #rocket knife lua
 ###########################################################################
 ./3rd/rk/%.c: ./3rd/rk/%.h
@@ -102,24 +122,19 @@ $(MACBIN)/junzip_dump: $(OBJ)/junzip_dump.o $(OBJ)/junzip.a
 $(OBJ)/%.o: ./rk/%.c
 	$(X86GCC) $(LUADEF) -I./3rd/lua/src -I./3rd/rk $(X86CFLAGS) -o $@ -c $<
 
-RKLUAO= rklinit.o rkcrypt.o rkcompress.o rknetstring.o rkunzip.o
+RKLUAO= rklinit.o rkcrypt.o rkcompress.o rknetstring.o rkunzip.o rksqlite.o
 
 $(OBJ)/rklua.a: $(addprefix $(OBJ)/, $(RKLUAO))
 	ar rvs $@ $^
 
-$(MACBIN)/rk: $(OBJ)/rklua.o $(OBJ)/lua.a $(OBJ)/rklua.a $(OBJ)/blowfish.a $(OBJ)/minilzo.a $(OBJ)/junzip.a
+$(MACBIN)/rk: $(OBJ)/rklua.o $(OBJ)/lua.a $(OBJ)/rklua.a \
+	$(OBJ)/blowfish.a $(OBJ)/minilzo.a $(OBJ)/junzip.a $(OBJ)/sqlite3.a
 	$(X86GCC) $(LUADEF) -I./3rd/lua/src -I./3rd/rk $(X86CFLAGS) -o $@ $^
 
 #all
 ###########################################################################
 .DEFAULT_GOAL := all
 .PHONEY: clean x86 mac all
-#
-# x86: $(FBUILD) \
-# 	$(OBJ)/lua.a \
-# 	$(OBJ)/blowfish.a \
-# 	$(OBJ)/minilzo.a \
-# 	$(OBJ)/rklua.a
 
 mac: $(MACBIN)/lua \
 	$(MACBIN)/rk \
