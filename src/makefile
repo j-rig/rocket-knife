@@ -5,12 +5,14 @@ FBUILD=$(DBUILD)/build
 DAUTOGEN=$(DBUILD)/autogen
 OBJ= $(DBUILD)/x86/obj
 BIN= $(DBUILD)/x86/bin
+MACBIN=$(DBUILD)/x86/macbin
 
 $(FBUILD):
 	mkdir -p $(DBUILD)
 	mkdir -p $(DAUTOGEN)
 	mkdir -p $(OBJ)
 	mkdir -p $(BIN)
+	mkdir -p $(MACBIN)
 	touch $@
 
 clean:
@@ -29,13 +31,19 @@ X86CFLAGS= $(CFLAGS)
 ./3rd/lua/src/%.c: ./3rd/lua/src/%.h
 
 LUADEF= -D LUA_USE_POSIX
+LUADEF+= -D LUA_USE_READLINE
+LUADEF+= -D readline=linenoise
+LUADEF+= -D add_history=linenoiseHistoryAdd
+
+$(OBJ)/%.o: ./3rd/linenoise/%.c
+	$(X86GCC) -I./3rd/linenoise $(X86CFLAGS) -o $@ -c $<
 
 $(OBJ)/%.o: ./3rd/lua/src/%.c
 	$(X86GCC) $(LUADEF) -I./3rd/lua/src $(X86CFLAGS) -o $@ -c $<
 
 LUACOREO=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o \
 	llex.o lmem.o lobject.o lopcodes.o lparser.o lstate.o lstring.o \
-	ltable.o ltm.o lundump.o lvm.o lzio.o
+	ltable.o ltm.o lundump.o lvm.o lzio.o linenoise.o
 
 LUALIBO=	lauxlib.o lbaselib.o lcorolib.o ldblib.o liolib.o lmathlib.o \
 	loadlib.o loslib.o lstrlib.o ltablib.o lutf8lib.o linit.o
@@ -43,9 +51,9 @@ LUALIBO=	lauxlib.o lbaselib.o lcorolib.o ldblib.o liolib.o lmathlib.o \
 $(OBJ)/lua.a: $(addprefix $(OBJ)/, $(LUACOREO)) $(addprefix $(OBJ)/, $(LUALIBO))
 	ar rvs $@ $^
 
-$(BIN)/lua: $(OBJ)/lua.o $(OBJ)/lua.a
-	$(X86GCC) -static $(LUADEF) -I./3rd/lua/src $(X86CFLAGS) \
-	-o $@ $^
+$(MACBIN)/lua: $(OBJ)/lua.o $(OBJ)/lua.a
+	$(X86GCC) $(LUADEF) -I./3rd/lua/src $(X86CFLAGS) \
+	-o $@ $^ $(addprefix $(OBJ)/, $(LUAO))
 
 #blowfish lib
 ###########################################################################
@@ -71,15 +79,50 @@ MINLZOLIBO= minilzo.o
 $(OBJ)/minilzo.a: $(addprefix $(OBJ)/, $(MINLZOLIBO))
 	ar rvs $@ $^
 
+#junzip
+###########################################################################
+./3rd/junzip/%.c: ./3rd/junzip/%.h
+
+$(OBJ)/%.o: ./3rd/junzip/%.c
+	$(X86GCC) -DHAVE_PUFF -I./3rd/junzip $(X86CFLAGS) -o $@ -c $<
+
+MINLZOLIBO= junzip.o puff.o
+
+$(OBJ)/junzip.a: $(addprefix $(OBJ)/, $(MINLZOLIBO))
+	ar rvs $@ $^
+
+$(MACBIN)/junzip_dump: $(OBJ)/junzip_dump.o $(OBJ)/junzip.a
+	$(X86GCC) -DHAVE_PUFF -I./3rd/junzip $(X86CFLAGS) \
+	-o $@ $^
+
+#rocket knife lua
+###########################################################################
+./3rd/rk/%.c: ./3rd/rk/%.h
+
+$(OBJ)/%.o: ./rk/%.c
+	$(X86GCC) $(LUADEF) -I./3rd/lua/src -I./3rd/rk $(X86CFLAGS) -o $@ -c $<
+
+RKLUAO= rklinit.o rkcrypt.o rkcompress.o rknetstring.o rkunzip.o
+
+$(OBJ)/rklua.a: $(addprefix $(OBJ)/, $(RKLUAO))
+	ar rvs $@ $^
+
+$(MACBIN)/rk: $(OBJ)/rklua.o $(OBJ)/lua.a $(OBJ)/rklua.a $(OBJ)/blowfish.a $(OBJ)/minilzo.a $(OBJ)/junzip.a
+	$(X86GCC) $(LUADEF) -I./3rd/lua/src -I./3rd/rk $(X86CFLAGS) -o $@ $^
+
 #all
 ###########################################################################
 .DEFAULT_GOAL := all
-.PHONEY: clean x86 all
+.PHONEY: clean x86 mac all
+#
+# x86: $(FBUILD) \
+# 	$(OBJ)/lua.a \
+# 	$(OBJ)/blowfish.a \
+# 	$(OBJ)/minilzo.a \
+# 	$(OBJ)/rklua.a
 
-x86: $(FBUILD) \
-	$(OBJ)/lua.a \
-	$(OBJ)/blowfish.a \
-	$(OBJ)/minilzo.a \
-	$(BIN)/lua
+mac: $(MACBIN)/lua \
+	$(MACBIN)/rk \
+	$(MACBIN)/junzip_dump
 
-all: x86
+all: $(FBUILD) mac

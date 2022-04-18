@@ -22,7 +22,7 @@
 
 
 #if !defined(LUA_PROGNAME)
-#define LUA_PROGNAME		"lua"
+#define LUA_PROGNAME		"rk"
 #endif
 
 #if !defined(LUA_INIT_VAR)
@@ -374,8 +374,8 @@ static int handle_luainit (lua_State *L) {
 */
 
 #if !defined(LUA_PROMPT)
-#define LUA_PROMPT		"> "
-#define LUA_PROMPT2		">> "
+#define LUA_PROMPT		"rk> "
+#define LUA_PROMPT2		"rk>> "
 #endif
 
 #if !defined(LUA_MAXINPUT)
