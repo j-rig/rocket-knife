@@ -53,10 +53,12 @@ static const luaL_Reg loadedlibs[] = {
   {LUA_UTF8LIBNAME, luaopen_utf8},
   {LUA_DBLIBNAME, luaopen_debug},
 
+  {"rkutil", luaopen_rkutil},
   {"rkcrypt", luaopen_rkcrypt},
   {"rkcompress", luaopen_rkcompress},
-  {"rknetstring", luaopen_rknetstring},
   {"rkunzip", luaopen_rkunzip},
+  {"rksqlite", luaopen_rksqlite},
+  {"rksocket", luaopen_socketdriver},
 
   {NULL, NULL}
 };

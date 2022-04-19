@@ -46,12 +46,12 @@ LUACOREO=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o \
 	ltable.o ltm.o lundump.o lvm.o lzio.o linenoise.o
 
 LUALIBO=	lauxlib.o lbaselib.o lcorolib.o ldblib.o liolib.o lmathlib.o \
-	loadlib.o loslib.o lstrlib.o ltablib.o lutf8lib.o linit.o
+	loadlib.o loslib.o lstrlib.o ltablib.o lutf8lib.o
 
 $(OBJ)/lua.a: $(addprefix $(OBJ)/, $(LUACOREO)) $(addprefix $(OBJ)/, $(LUALIBO))
 	ar rvs $@ $^
 
-$(MACBIN)/lua: $(OBJ)/lua.o $(OBJ)/lua.a
+$(MACBIN)/lua: $(OBJ)/lua.o $(OBJ)/linit.o $(OBJ)/lua.a
 	$(X86GCC) $(LUADEF) -I./3rd/lua/src $(X86CFLAGS) \
 	-o $@ $^ $(addprefix $(OBJ)/, $(LUAO))
 
@@ -119,17 +119,25 @@ $(OBJ)/sqlite3.a: $(addprefix $(OBJ)/, $(SQLITELIBO))
 ###########################################################################
 ./3rd/rk/%.c: ./3rd/rk/%.h
 
-$(OBJ)/%.o: ./rk/%.c
-	$(X86GCC) $(LUADEF) -I./3rd/lua/src -I./3rd/rk $(X86CFLAGS) -o $@ -c $<
+RKINC= -I./3rd/lua/src
+RKINC+= -I./3rd/minilzo
+RKINC+= -I./3rd/bfsh-koc
+RKINC+= -I./3rd/junzip
+RKINC+= -I./3rd/sqlite-amalgamation
+RKINC+= -I./3rd/rk
 
-RKLUAO= rklinit.o rkcrypt.o rkcompress.o rknetstring.o rkunzip.o rksqlite.o
+$(OBJ)/%.o: ./rk/%.c
+	$(X86GCC) $(LUADEF) $(RKINC) $(X86CFLAGS) -o $@ -c $<
+
+RKLUAO= rklinit.o rkcrypt.o rkcompress.o rkunzip.o rksqlite.o \
+	rw_it.o netstring.o socketdriver.o rkutil.o
 
 $(OBJ)/rklua.a: $(addprefix $(OBJ)/, $(RKLUAO))
 	ar rvs $@ $^
 
 $(MACBIN)/rk: $(OBJ)/rklua.o $(OBJ)/lua.a $(OBJ)/rklua.a \
 	$(OBJ)/blowfish.a $(OBJ)/minilzo.a $(OBJ)/junzip.a $(OBJ)/sqlite3.a
-	$(X86GCC) $(LUADEF) -I./3rd/lua/src -I./3rd/rk $(X86CFLAGS) -o $@ $^
+	$(X86GCC) $(LUADEF)  $(RKINC) $(X86CFLAGS) -o $@ $^
 
 #all
 ###########################################################################
