@@ -59,6 +59,7 @@ static const luaL_Reg loadedlibs[] = {
   {"rkunzip", luaopen_rkunzip},
   {"rksqlite", luaopen_rksqlite},
   {"rksocket", luaopen_socketdriver},
+  {"rkrpc", luaopen_rkrpc},
 
   {NULL, NULL}
 };

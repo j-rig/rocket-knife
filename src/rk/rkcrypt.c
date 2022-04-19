@@ -15,7 +15,7 @@
 
 #define BFBLOCK (2*sizeof(unsigned long))
 
-int l_init(lua_State *L)
+int l_rkcrypt_init(lua_State *L)
 {
 	BLOWFISH_CTX *ctx;
 	unsigned char *key;
@@ -34,7 +34,7 @@ int l_init(lua_State *L)
 		return 1;
 }
 
-int l_encrypt(lua_State *L)
+int l_rkcrypt_encrypt(lua_State *L)
 {
 	BLOWFISH_CTX *ctx;
 	unsigned char *bin, *bout;
@@ -60,7 +60,7 @@ int l_encrypt(lua_State *L)
 	return 2;
 }
 
-int l_decrypt(lua_State *L)
+int l_rkcrypt_decrypt(lua_State *L)
 {
 	BLOWFISH_CTX *ctx;
 	unsigned char *bin, *bout;
@@ -91,9 +91,9 @@ int l_decrypt(lua_State *L)
 }
 
 static const struct luaL_Reg crypt_reg[] = {
-	{ "init",			 l_init		       },
-	{ "encrypt",			 l_encrypt	       },
-	{ "decrypt",			 l_decrypt	       },
+	{ "init",			 l_rkcrypt_init		       },
+	{ "encrypt",			 l_rkcrypt_encrypt	       },
+	{ "decrypt",			 l_rkcrypt_decrypt	       },
 	{ NULL,			 NULL		       }
 };
 

@@ -1,7 +1,7 @@
 /**
  * @file netstring.h
  * @author Josh Righetti
- * @date sept 2020
+ * @date sept 2022
  * @brief this module implements reading and writing netstrings to a posix file handle
  * @see https://cr.yp.to/proto/netstrings.txt
  */

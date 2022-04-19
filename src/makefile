@@ -6,6 +6,7 @@ DAUTOGEN=$(DBUILD)/autogen
 OBJ= $(DBUILD)/x86/obj
 BIN= $(DBUILD)/x86/bin
 MACBIN=$(DBUILD)/x86/macbin
+DTEST=$(DBUILD)/test
 
 $(FBUILD):
 	mkdir -p $(DBUILD)
@@ -13,6 +14,7 @@ $(FBUILD):
 	mkdir -p $(OBJ)
 	mkdir -p $(BIN)
 	mkdir -p $(MACBIN)
+	mkdir -p $(DTEST)
 	touch $@
 
 clean:
@@ -130,7 +132,7 @@ $(OBJ)/%.o: ./rk/%.c
 	$(X86GCC) $(LUADEF) $(RKINC) $(X86CFLAGS) -o $@ -c $<
 
 RKLUAO= rklinit.o rkcrypt.o rkcompress.o rkunzip.o rksqlite.o \
-	rw_it.o netstring.o socketdriver.o rkutil.o
+	rw_it.o netstring.o socketdriver.o rkutil.o rkrpc.o
 
 $(OBJ)/rklua.a: $(addprefix $(OBJ)/, $(RKLUAO))
 	ar rvs $@ $^
@@ -138,6 +140,11 @@ $(OBJ)/rklua.a: $(addprefix $(OBJ)/, $(RKLUAO))
 $(MACBIN)/rk: $(OBJ)/rklua.o $(OBJ)/lua.a $(OBJ)/rklua.a \
 	$(OBJ)/blowfish.a $(OBJ)/minilzo.a $(OBJ)/junzip.a $(OBJ)/sqlite3.a
 	$(X86GCC) $(LUADEF)  $(RKINC) $(X86CFLAGS) -o $@ $^
+
+#test
+###########################################################################
+test: $(FBUILD) mac
+	python -u -m unittest discover tests
 
 #all
 ###########################################################################

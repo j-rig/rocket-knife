@@ -17,5 +17,6 @@ LUAMOD_API int luaopen_rkunzip(lua_State *L);
 LUAMOD_API int luaopen_rksqlite(lua_State *L);
 LUAMOD_API int luaopen_socketdriver(lua_State *L);
 LUAMOD_API int luaopen_rkutil(lua_State *L);
+LUAMOD_API int luaopen_rkrpc(lua_State *L);
 
 #endif
