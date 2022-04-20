@@ -25,6 +25,7 @@ int l_rkcrypt_init(lua_State *L)
 	if (keyLen < 32/8 || keyLen > 448/8) goto erra;
 
 	ctx= (BLOWFISH_CTX *) lua_newuserdata(L, sizeof(BLOWFISH_CTX));
+	assert(ctx!=NULL);
 	Blowfish_Init(ctx, key,keyLen);
 	return 1;
 
@@ -49,15 +50,15 @@ int l_rkcrypt_encrypt(lua_State *L)
 
 	boutLen = binLen + binLen%BFBLOCK;
 	bout = (unsigned char *) luaL_buffinitsize(L, &lb, boutLen);
+	assert(bout!=NULL);
 	memcpy(bout,bin, binLen);
 
 	for( i=0; i< boutLen;i+=BFBLOCK)
 		Blowfish_Encrypt(ctx, (unsigned long *) bout+i,
 			(unsigned long *) bout+(i+BFBLOCK/2));
 
-	lua_pushinteger(L, binLen);
 	luaL_pushresultsize(&lb,boutLen);
-	return 2;
+	return 1;
 }
 
 int l_rkcrypt_decrypt(lua_State *L)
@@ -75,6 +76,7 @@ int l_rkcrypt_decrypt(lua_State *L)
 	if(binLen%BFBLOCK) goto erra;
 
 	bout = (unsigned char *) luaL_buffinitsize(L, &lb, binLen);
+	assert(bout!=NULL);
 	memcpy(bout, bin, binLen);
 
 	for( i=0; i< binLen;i+=BFBLOCK)

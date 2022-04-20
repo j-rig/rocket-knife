@@ -144,6 +144,7 @@ $(MACBIN)/rk: $(OBJ)/rklua.o $(OBJ)/lua.a $(OBJ)/rklua.a \
 #test
 ###########################################################################
 test: $(FBUILD) mac
+	export TESTDIR=$(DTEST); \
 	python -u -m unittest discover tests
 
 #all

@@ -49,6 +49,7 @@ int l_unzip_close(lua_State *L){
 int list_cb(JZFile *zip, int idx, JZFileHeader *header, char *filename, void *user_data){
 	struct zip_ctx *ctx= (struct zip_ctx *)user_data;
 	lua_pushstring (ctx->L, (const char *)filename);
+  lua_rawseti (ctx->L, -2, ctx->count+1); // add to list
 	ctx->count+=1;
 	return 1;
 }
@@ -67,9 +68,11 @@ int l_unzip_list(lua_State *L){
 
 	if(jzReadEndRecord(zip, &endRecord)) goto erra;
 
+  lua_createtable(L, 10, 0); // to store the list
+
 	if(jzReadCentralDirectory(zip, &endRecord, list_cb, &ctx)) goto errb;
 
-	return ctx.count;
+	return 1; // return the list
 
 	erra:
 		fprintf(stderr, "Couldn't read ZIP file end record.");
@@ -135,6 +138,8 @@ int l_unzip_extract(lua_State *L){
 
 	if(jzReadCentralDirectory(zip, &endRecord, extract_cb, &ctx)) goto errb;
 
+  if(ctx.count!=1) goto errc;
+
 	return ctx.count;
 
 	erra:
@@ -144,6 +149,11 @@ int l_unzip_extract(lua_State *L){
 
 	errb:
 		fprintf(stderr, "Couldn't read ZIP file central record.");
+		lua_pushnil(L);
+		return 1;
+
+  errc:
+		fprintf(stderr, "Didn't extract any records.");
 		lua_pushnil(L);
 		return 1;
 }

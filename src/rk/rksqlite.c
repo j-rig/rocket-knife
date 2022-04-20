@@ -51,6 +51,7 @@ static int qry_cb(void *c, int argc, char **argv, char **azColName){
 		lua_pushstring(ctx->L, argv[i] ? argv[i] : "NULL");
 		lua_setfield(ctx->L, -2, azColName[i]); // row kv
 	}
+  lua_rawseti (ctx->L, -2, ctx->count+1); // add row to row list
 	ctx->count+=1;
 	return 0;
 }
@@ -69,10 +70,13 @@ int l_sqlite_exec(lua_State *L){
 	db = lua_touserdata(L, 1);
 	qry= luaL_checkstring (L, 2);
 
+
+  lua_createtable(L, 100, 0); // to store the row list
+
 	rc = sqlite3_exec(db, qry, qry_cb, &ctx, &zErrMsg);
 	if( rc!=SQLITE_OK ) goto erra;
 
-	return ctx.count; // how many rows
+	return 1; // return the row list
 
 	erra:
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
