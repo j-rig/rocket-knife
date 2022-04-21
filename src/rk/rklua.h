@@ -19,4 +19,6 @@ LUAMOD_API int luaopen_socketdriver(lua_State *L);
 LUAMOD_API int luaopen_rkutil(lua_State *L);
 LUAMOD_API int luaopen_rkrpc(lua_State *L);
 
+LUALIB_API void lua_preload_zip(lua_State *L, char *path);
+
 #endif

@@ -75,12 +75,12 @@ int l_unzip_list(lua_State *L){
 	return 1; // return the list
 
 	erra:
-		fprintf(stderr, "Couldn't read ZIP file end record.");
+		fprintf(stderr, "Couldn't read ZIP file end record.\n");
 		lua_pushnil(L);
 		return 1;
 
 	errb:
-		fprintf(stderr, "Couldn't read ZIP file central record.");
+		fprintf(stderr, "Couldn't read ZIP file central record.\n");
 		lua_pushnil(L);
 		return 1;
 }
@@ -104,19 +104,19 @@ int extract_cb(JZFile *zip, int idx, JZFileHeader *header, char *filename, void 
 	return 1;
 
 	erra:
-		fprintf(stderr, "Cannot seek in zip file!");
+		fprintf(stderr, "Cannot seek in zip file!\n");
 		lua_pushnil(ctx->L);
 		ctx->count+=1;
 		return 0;
 
 	errb:
-		fprintf(stderr, "Couldn't read local file header!");
+		fprintf(stderr, "Couldn't read local file header!\n");
 		lua_pushnil(ctx->L);
 		ctx->count+=1;
 		return 0;
 
 	errc:
-		fprintf(stderr, "Couldn't read file data!");
+		fprintf(stderr, "Couldn't read file data!\n");
 		lua_pushnil(ctx->L);
 		ctx->count+=1;
 		return 0;
@@ -143,17 +143,17 @@ int l_unzip_extract(lua_State *L){
 	return ctx.count;
 
 	erra:
-		fprintf(stderr, "Couldn't read ZIP file end record.");
+		fprintf(stderr, "Couldn't read ZIP file end record.\n");
 		lua_pushnil(L);
 		return 1;
 
 	errb:
-		fprintf(stderr, "Couldn't read ZIP file central record.");
+		fprintf(stderr, "Couldn't read ZIP file central record.\n");
 		lua_pushnil(L);
 		return 1;
 
   errc:
-		fprintf(stderr, "Didn't extract any records.");
+		fprintf(stderr, "Didn't extract any records.\n");
 		lua_pushnil(L);
 		return 1;
 }

@@ -24,6 +24,8 @@
 **  lua_pop(L, 1);  // remove PRELOAD table
 */
 
+#include <assert.h>
+
 #include "lprefix.h"
 
 
@@ -72,4 +74,31 @@ LUALIB_API void luaL_openlibs (lua_State *L) {
     luaL_requiref(L, lib->name, lib->func, 1);
     lua_pop(L, 1);  /* remove lib */
   }
+}
+
+/* preload from zip appended to self */
+LUALIB_API void lua_preload_zip(lua_State *L, char *path) {
+
+  int top;
+	char *cmd = "zip=rkunzip.open(_self_path) " \
+    "ziplist=rkunzip.list(zip) " \
+    "if ziplist ~= nil then " \
+    "print(\"preloading from zip\")" \
+    "for i,v in pairs(ziplist) do " \
+    "data= rkunzip.extract(zip,v)" \
+    "if data ~= nil then " \
+    "print(v)" \
+    "package.preload[v] = function() " \
+    "return loadstring(data) " \
+    "end " \
+    "end " \
+    "end " \
+    "end " \
+    "rkunzip.close(zip) ";
+
+  top=lua_gettop(L);
+  lua_pushstring (L, path);
+  lua_setglobal(L, "_self_path");
+	assert(luaL_dostring(L, cmd)==0);
+  lua_settop(L, top);
 }

@@ -20,6 +20,8 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+#include "rklua.h"
+
 
 #if !defined(LUA_PROGNAME)
 #define LUA_PROGNAME		"rk"
@@ -623,6 +625,7 @@ static int pmain (lua_State *L) {
     lua_setfield(L, LUA_REGISTRYINDEX, "LUA_NOENV");
   }
   luaL_openlibs(L);  /* open standard libraries */
+  lua_preload_zip(L, argv[0]); /* preload from zip appended to self */
   createargtable(L, argv, argc, script);  /* create table 'arg' */
   lua_gc(L, LUA_GCGEN, 0, 0);  /* GC in generational mode */
   if (!(args & has_E)) {  /* no option '-E'? */
