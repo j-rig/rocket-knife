@@ -41,21 +41,26 @@ int l_rkcrypt_encrypt(lua_State *L)
 	unsigned char *bin, *bout;
 	size_t binLen, boutLen;
 	luaL_Buffer lb;
-	int i;
+	int i; //, j;
 
 	assert(lua_isuserdata(L, 1));
 	ctx = lua_touserdata(L, 1);
 
 	bin = (unsigned char *) luaL_checklstring(L, 2, &binLen);
+	boutLen = binLen;
+	if(binLen%BFBLOCK) boutLen+= BFBLOCK-binLen%BFBLOCK;
 
-	boutLen = binLen + binLen%BFBLOCK;
+	//fprintf(stderr, "%lu, %lu, %lu\n", BFBLOCK, binLen,boutLen);
 	bout = (unsigned char *) luaL_buffinitsize(L, &lb, boutLen);
-	assert(bout!=NULL);
 	memcpy(bout,bin, binLen);
+	//fprintf(stderr, "%s\n", bout);
 
-	for( i=0; i< boutLen;i+=BFBLOCK)
-		Blowfish_Encrypt(ctx, (unsigned long *) bout+i,
-			(unsigned long *) bout+(i+BFBLOCK/2));
+	for( i=0; i< boutLen;i+=BFBLOCK){
+		//j=i+BFBLOCK/2;
+		//fprintf(stderr,"%i, %i\n",i, j);
+		Blowfish_Encrypt(ctx, (unsigned long*) bout+i,
+			(unsigned long*) bout+i+BFBLOCK/2);
+	}
 
 	luaL_pushresultsize(&lb,boutLen);
 	return 1;
@@ -66,14 +71,18 @@ int l_rkcrypt_decrypt(lua_State *L)
 	BLOWFISH_CTX *ctx;
 	unsigned char *bin, *bout;
 	size_t binLen;
+	lua_Integer l_decrypt;
 	luaL_Buffer lb;
 	int i;
 
 	assert(lua_isuserdata(L, 1));
 	ctx = lua_touserdata(L, 1);
 
-	bin = (unsigned char *) luaL_checklstring(L, 2, &binLen);
+	l_decrypt = luaL_checkinteger(L, 2);
+
+	bin = (unsigned char *) luaL_checklstring(L, 3, &binLen);
 	if(binLen%BFBLOCK) goto erra;
+	if(binLen < l_decrypt) goto errb;
 
 	bout = (unsigned char *) luaL_buffinitsize(L, &lb, binLen);
 	assert(bout!=NULL);
@@ -81,13 +90,18 @@ int l_rkcrypt_decrypt(lua_State *L)
 
 	for( i=0; i< binLen;i+=BFBLOCK)
 		Blowfish_Decrypt(ctx, (unsigned long *) bout+i,
-			(unsigned long *) bout+(i+BFBLOCK/2));
+			(unsigned long *) bout+i+BFBLOCK/2);
 
-	luaL_pushresultsize(&lb,binLen);
+	luaL_pushresultsize(&lb,l_decrypt);
 	return 1;
 
 	erra:
 		fprintf(stderr, "input buffer not a multiple of 64.\n");
+		lua_pushnil(L);
+		return 1;
+
+	errb:
+		fprintf(stderr, "input size smaller than decypted size.\n");
 		lua_pushnil(L);
 		return 1;
 }
