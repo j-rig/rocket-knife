@@ -7,6 +7,7 @@ OBJ= $(DBUILD)/x86/obj
 BIN= $(DBUILD)/x86/bin
 MACBIN=$(DBUILD)/x86/macbin
 DTEST=$(DBUILD)/test
+DLUAC=$(DBUILD)/luac
 
 $(FBUILD):
 	mkdir -p $(DBUILD)
@@ -15,6 +16,7 @@ $(FBUILD):
 	mkdir -p $(BIN)
 	mkdir -p $(MACBIN)
 	mkdir -p $(DTEST)
+	mkdir -p $(DLUAC)
 	touch $@
 
 clean:
@@ -54,6 +56,10 @@ $(OBJ)/lua.a: $(addprefix $(OBJ)/, $(LUACOREO)) $(addprefix $(OBJ)/, $(LUALIBO))
 	ar rvs $@ $^
 
 $(MACBIN)/lua: $(OBJ)/lua.o $(OBJ)/linit.o $(OBJ)/lua.a
+	$(X86GCC) $(LUADEF) -I./3rd/lua/src $(X86CFLAGS) \
+	-o $@ $^ $(addprefix $(OBJ)/, $(LUAO))
+
+$(MACBIN)/luac: $(OBJ)/luac.o $(OBJ)/lua.a
 	$(X86GCC) $(LUADEF) -I./3rd/lua/src $(X86CFLAGS) \
 	-o $@ $^ $(addprefix $(OBJ)/, $(LUAO))
 
@@ -139,21 +145,39 @@ $(OBJ)/rklua.a: $(addprefix $(OBJ)/, $(RKLUAO))
 
 $(MACBIN)/rk: $(OBJ)/rklua.o $(OBJ)/lua.a $(OBJ)/rklua.a \
 	$(OBJ)/blowfish.a $(OBJ)/minilzo.a $(OBJ)/junzip.a $(OBJ)/sqlite3.a
-	$(X86GCC) $(LUADEF)  $(RKINC) $(X86CFLAGS) -o $@ $^
+	$(X86GCC) $(LUADEF) $(RKINC) $(X86CFLAGS) -o $@ $^ ; \
+	cat $(DBUILD)/lua.zip >> $(MACBIN)/rk
+
+# lua zip
+###########################################################################
+RKLUAC= rkbasic.luac rkbasic2.luac rkbasic3.luac
+
+$(DLUAC)/%.luac: ./rklua/%.lua
+	$(MACBIN)/luac -o $@ $^
+
+$(DBUILD)/lua.zip: $(addprefix $(DLUAC)/, $(RKLUAC))
+		python ./scripts/ziplua.py $@ $^
 
 #test
 ###########################################################################
-test: $(FBUILD) mac
+test: mac
 	export TESTDIR=$(DTEST); \
 	python -u -m unittest discover tests
 
 #all
 ###########################################################################
 .DEFAULT_GOAL := all
-.PHONEY: clean x86 mac all
+.PHONEY: clean x86 mac all zip test
 
-mac: $(MACBIN)/lua \
+zip: $(FBUILD) \
+	$(MACBIN)/luac \
+	$(DBUILD)/lua.zip
+
+mac: $(FBUILD) \
+	$(MACBIN)/lua \
+	$(MACBIN)/luac \
+	zip \
 	$(MACBIN)/rk \
 	$(MACBIN)/junzip_dump
 
-all: $(FBUILD) mac
+all: mac

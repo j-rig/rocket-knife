@@ -89,7 +89,7 @@ LUALIB_API void lua_preload_zip(lua_State *L, char *path) {
     "if data ~= nil then " \
     "print(v)" \
     "package.preload[v] = function() " \
-    "return loadstring(data) " \
+    "return load(data) " \
     "end " \
     "end " \
     "end " \

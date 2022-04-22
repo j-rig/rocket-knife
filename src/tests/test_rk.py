@@ -33,10 +33,15 @@ class rk_tests(unittest.TestCase):
 
     def test_unzip(self):
         os.environ['TEST_ZIP']=os.path.join(os.environ['TESTDIR'], 'unzip.zip')
+        os.environ['TEST_ZIP2']=os.path.join(os.environ['TESTDIR'], 'unzip2.zip')
         with zipfile.ZipFile(os.environ['TEST_ZIP'], 'w') as zf:
             zf.writestr('testa', 'testa'*1000)
             zf.writestr('testb', 'testb'*10000, zipfile.ZIP_DEFLATED)
             zf.writestr('testc', 'testc')
+        with open(os.environ['TEST_ZIP2'],'w') as fho:
+            fho.write('blah'*1001)
+            with open(os.environ['TEST_ZIP'],'r') as fhi:
+                fho.write(fhi.read())
         self.lua('test_unzip.lua')
 
     def test_compress(self):

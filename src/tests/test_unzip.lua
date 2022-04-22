@@ -29,3 +29,11 @@ print('extracted testc:')
 print(c)
 
 rkunzip.close(zip)
+
+zipf=os.getenv("TEST_ZIP2")
+zip=rkunzip.open(zipf)
+
+l=rkunzip.list(zip)
+--assert(l ~= nil)
+--print("zip2 list:", table.concat(l,", "))
+--rkunzip.close(zip)
