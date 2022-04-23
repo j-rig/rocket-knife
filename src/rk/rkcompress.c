@@ -9,6 +9,7 @@
 #include <lauxlib.h>
 
 #include <minilzo.h>
+#include <puff.h>
 
 #define HEAP_ALLOC(var,size) \
     lzo_align_t __LZO_MMODEL var [ ((size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t) ]
@@ -76,9 +77,46 @@ int l_decompress(lua_State *L)
 		return 1;
 }
 
+// int l_puff(lua_State *L)
+// {
+// 	int r;
+// 	size_t bl, bl_out;
+// 	char *b, *b_out;
+// 	lua_Integer l_uncompressed;
+// 	luaL_Buffer lb;
+//
+// 	l_uncompressed = luaL_checkinteger(L, 1);
+// 	b = (char *) luaL_checklstring(L, 2, &bl);
+//
+// 	if (l_uncompressed <= bl) goto erra;
+//
+// 	b_out = (char *) luaL_buffinitsize(L, &lb, l_uncompressed);
+//
+//   r = puff((unsigned char *)b_out,           /* pointer to destination pointer */
+//            &bl_out,        /* amount of output space */
+//            (const unsigned char *)b,   /* pointer to source data pointer */
+//            &bl);     /* amount of input available */
+//
+// 	if (r != 0 || l_uncompressed != bl_out) goto errb;
+//
+// 	luaL_pushresultsize(&lb,bl_out);
+// 	return 1;
+//
+// 	erra:
+// 		fprintf(stderr, "decompressed length less than or equal to input buffer length.\n");
+// 		lua_pushnil(L);
+// 		return 1;
+//
+// 	errb:
+// 		fprintf(stderr, "internal error %i- decompression failed.\n", r);
+// 		lua_pushnil(L);
+// 		return 1;
+// }
+
 static const struct luaL_Reg compress_reg[] = {
 	{ "compress",	    l_compress },
 { "decompress",	    l_decompress },
+// { "puff",	    l_puff },
 	{ NULL,			 NULL		       }
 };
 

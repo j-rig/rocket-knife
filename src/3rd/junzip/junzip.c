@@ -64,11 +64,26 @@ int jzReadCentralDirectory(JZFile *zip, JZEndRecord *endRecord,
     JZGlobalFileHeader fileHeader;
     JZFileHeader header;
     int i;
+    //size_t offset;
+    //int32_t cd_signature=0, fh_signature=0;
 
     if(zip->seek(zip, endRecord->centralDirectoryOffset, SEEK_SET)) {
         fprintf(stderr, "Cannot seek in zip file!");
         return Z_ERRNO;
     }
+
+    //scan for appended zip file offset
+    // for(offset=0;fh_signature!=0x04034B50 && cd_signature!=0x02014B50;offset++){
+    //     zip->seek(zip, offset, SEEK_SET);
+    //     zip->read(zip, &fh_signature, sizeof(int32_t));
+    //     zip->seek(zip, (endRecord->centralDirectoryOffset)+offset, SEEK_SET);
+    //     zip->read(zip, &cd_signature, sizeof(int32_t));
+    // }
+    // offset--;
+    //
+    // if(offset)fprintf(stderr,"zipfile offset: %lu\n", offset);
+    //
+    // zip->seek(zip, -sizeof(int32_t), SEEK_CUR);
 
     for(i=0; i<endRecord->numEntries; i++) {
         if(zip->read(zip, &fileHeader, sizeof(JZGlobalFileHeader)) <

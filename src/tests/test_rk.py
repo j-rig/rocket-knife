@@ -7,6 +7,8 @@ import subprocess
 import os
 #import os.path
 import zipfile
+import zlib
+import gzip
 
 import helpers
 
@@ -31,6 +33,23 @@ class rk_tests(unittest.TestCase):
     def test_basic(self):
         self.lua('test_basic.lua')
 
+    def test_compress(self):
+        # data='testa'*10000
+        # os.environ['TEST_PUFF']=os.path.join(os.environ['TESTDIR'], 'data.puff')
+        # os.environ['TEST_TEXT']=os.path.join(os.environ['TESTDIR'], 'data.txt')
+        # with open(os.environ['TEST_PUFF'],'wb') as fh:
+        #     fh.write(zlib.compress(data))
+        # with open(os.environ['TEST_TEXT'],'wb') as fh:
+        #     fh.write(data)
+        self.lua('test_compress.lua')
+
+    def test_crypt(self):
+        self.lua('test_crypt.lua')
+
+    def test_sqlite(self):
+        os.environ['TEST_SQLITE']=os.path.join(os.environ['TESTDIR'], 'test.sqlite')
+        self.lua('test_sqlite.lua')
+
     def test_unzip(self):
         os.environ['TEST_ZIP']=os.path.join(os.environ['TESTDIR'], 'unzip.zip')
         os.environ['TEST_ZIP2']=os.path.join(os.environ['TESTDIR'], 'unzip2.zip')
@@ -43,13 +62,3 @@ class rk_tests(unittest.TestCase):
             with open(os.environ['TEST_ZIP'],'r') as fhi:
                 fho.write(fhi.read())
         self.lua('test_unzip.lua')
-
-    def test_compress(self):
-        self.lua('test_compress.lua')
-
-    def test_crypt(self):
-        self.lua('test_crypt.lua')
-
-    def test_compress(self):
-        os.environ['TEST_SQLITE']=os.path.join(os.environ['TESTDIR'], 'test.sqlite')
-        self.lua('test_sqlite.lua')

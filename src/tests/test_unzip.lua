@@ -30,10 +30,17 @@ print(c)
 
 rkunzip.close(zip)
 
-zipf=os.getenv("TEST_ZIP2")
-zip=rkunzip.open(zipf)
+--zipf=os.getenv("TEST_ZIP2")
+--zip=rkunzip.open(zipf)
 
-l=rkunzip.list(zip)
+--l=rkunzip.list(zip)
 --assert(l ~= nil)
 --print("zip2 list:", table.concat(l,", "))
+
+--c=rkunzip.extract(zip,"testc")
+--assert(c ~= nil)
+--assert(c == "testc")
+--print('extracted testc:')
+--print(c)
+
 --rkunzip.close(zip)

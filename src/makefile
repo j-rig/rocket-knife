@@ -99,9 +99,9 @@ MINLZOLIBO= junzip.o puff.o
 $(OBJ)/junzip.a: $(addprefix $(OBJ)/, $(MINLZOLIBO))
 	ar rvs $@ $^
 
-$(MACBIN)/junzip_dump: $(OBJ)/junzip_dump.o $(OBJ)/junzip.a
-	$(X86GCC) -DHAVE_PUFF -I./3rd/junzip $(X86CFLAGS) \
-	-o $@ $^
+# $(MACBIN)/junzip_dump: $(OBJ)/junzip_dump.o $(OBJ)/junzip.a
+# 	$(X86GCC) -DHAVE_PUFF -I./3rd/junzip $(X86CFLAGS) \
+# 	-o $@ $^
 
 #sqlite
 ###########################################################################
@@ -143,10 +143,12 @@ RKLUAO= rklinit.o rkcrypt.o rkcompress.o rkunzip.o rksqlite.o \
 $(OBJ)/rklua.a: $(addprefix $(OBJ)/, $(RKLUAO))
 	ar rvs $@ $^
 
-$(MACBIN)/rk: $(OBJ)/rklua.o $(OBJ)/lua.a $(OBJ)/rklua.a \
-	$(OBJ)/blowfish.a $(OBJ)/minilzo.a $(OBJ)/junzip.a $(OBJ)/sqlite3.a
-	$(X86GCC) $(LUADEF) $(RKINC) $(X86CFLAGS) -o $@ $^ ; \
-	cat $(DBUILD)/lua.zip >> $(MACBIN)/rk
+$(MACBIN)/rk_: $(OBJ)/rklua.o $(OBJ)/lua.a $(OBJ)/rklua.a \
+	$(OBJ)/blowfish.a $(OBJ)/minilzo.a $(OBJ)/sqlite3.a $(OBJ)/junzip.a
+	$(X86GCC) $(LUADEF) $(RKINC) $(X86CFLAGS) -o $@ $^; \
+
+$(MACBIN)/rk: $(MACBIN)/rk_ $(DBUILD)/lua.zip
+	cat $^ > $@; chmod a+x $@
 
 # lua zip
 ###########################################################################
@@ -155,8 +157,8 @@ RKLUAC= rkbasic.luac rkbasic2.luac rkbasic3.luac
 $(DLUAC)/%.luac: ./rklua/%.lua
 	$(MACBIN)/luac -o $@ $^
 
-$(DBUILD)/lua.zip: $(addprefix $(DLUAC)/, $(RKLUAC))
-		python ./scripts/ziplua.py $@ $^
+$(DBUILD)/lua.zip: $(MACBIN)/rk_ $(addprefix $(DLUAC)/, $(RKLUAC))
+	python ./scripts/ziplua.py $@ $^
 
 #test
 ###########################################################################
@@ -167,17 +169,18 @@ test: mac
 #all
 ###########################################################################
 .DEFAULT_GOAL := all
-.PHONEY: clean x86 mac all zip test
+.PHONEY: clean x86 mac all test
 
 zip: $(FBUILD) \
 	$(MACBIN)/luac \
+	$(MACBIN)/rk_ \
 	$(DBUILD)/lua.zip
 
 mac: $(FBUILD) \
 	$(MACBIN)/lua \
 	$(MACBIN)/luac \
+	$(MACBIN)/rk_ \
 	zip \
-	$(MACBIN)/rk \
-	$(MACBIN)/junzip_dump
+	$(MACBIN)/rk
 
 all: mac
