@@ -20,44 +20,31 @@ struct zip_ctx {
    unsigned long offset;
 };
 
-
-//   unsigned long scan_for_offset(JZFile *zip, uint32_t cd_offset){
-//
-//   unsigned long offset, fh_signature, cd_signature, signature;
-//
-//   //scan for appended zip file offset
-//   for(offset=0,fh_signature=0,cd_signature=0, signature=0;
-//     fh_signature!=0x04034B50 && cd_signature!=0x02014B50 &&
-//     (signature!=0x02014B50 && signature!=0x06054b50);offset++){
-//       zip->seek(zip, offset, SEEK_SET);
-//       zip->read(zip, &fh_signature, sizeof(int32_t));
-//       zip->seek(zip, cd_offset+offset, SEEK_SET);
-//       zip->read(zip, &cd_signature, sizeof(int32_t));
-//       zip->seek(zip, cd_offset+offset+sizeof(JZGlobalFileHeader), SEEK_SET);
-//       zip->read(zip, &signature, sizeof(int32_t));
-//   }
-//   offset--;
-//   if(offset) fprintf(stderr,"zip achive offset %lu.\n", offset);
-//   return offset;
-// }
-
-
-unsigned long scan_for_offset(lua_State *L, JZFile *zip, JZEndRecord *endRecord){
+unsigned long scan_for_offset(lua_State *L, JZFile *zip){
   luaL_Buffer lb;
-  char *buff;
+  const char *buff;
   int top;
-  unsigned long offset=0;
+  unsigned long i, offset=0;
+  JZEndRecord er;
 
   top=lua_gettop(L);
 
-  if(endRecord->zipCommentLength){
-    buff =  luaL_buffinitsize(L, &lb, endRecord->zipCommentLength);
-    zip->read(zip, &buff, endRecord->zipCommentLength);
-    luaL_pushresultsize(&lb,endRecord->zipCommentLength);
-    offset=lua_stringtonumber(L, lua_tostring(L, lua_gettop(L)));
-  }
-  if(offset) fprintf(stderr,"zip achive offset %lu.\n", offset);
+  fprintf(stderr,"finding zip end record.\n");
 
+  for(i=sizeof(JZEndRecord);;i++){
+    zip->seek(zip,-i,SEEK_END);
+    zip->read(zip, (void *) &er, sizeof(JZEndRecord));
+    if(er.signature == 0x06054B50)
+        break;
+  }
+  if(er.zipCommentLength){
+    fprintf(stderr,"zip comment length %u.\n", er.zipCommentLength);
+    buff =  luaL_buffinitsize(L, &lb, er.zipCommentLength+1);
+    memset((void*) buff, 0, 1);
+    zip->read(zip, (void *) buff, er.zipCommentLength);
+    sscanf(buff, "%lu", &offset);
+    if(offset)fprintf(stderr,"zip archive offset from comment: %lu.\n", offset);
+  }
   lua_settop(L, top);
   return offset;
 }
@@ -111,7 +98,7 @@ int l_unzip_list(lua_State *L){
 
 	if(jzReadEndRecord(zip, &endRecord)) goto erra;
 
-  ctx.offset=scan_for_offset(L, zip,&endRecord);
+  ctx.offset=scan_for_offset(L, zip);
   endRecord.centralDirectoryOffset+=ctx.offset;
 
   lua_createtable(L, 10, 0); // to store the list
@@ -182,7 +169,7 @@ int l_unzip_extract(lua_State *L){
 
 	if(jzReadEndRecord(zip, &endRecord)) goto erra;
 
-  ctx.offset=scan_for_offset(L,zip,&endRecord);
+  ctx.offset=scan_for_offset(L,zip);
   endRecord.centralDirectoryOffset+=ctx.offset;
 
 	if(jzReadCentralDirectory(zip, &endRecord, extract_cb, &ctx)) goto errb;

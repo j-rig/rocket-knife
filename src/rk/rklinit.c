@@ -61,7 +61,6 @@ static const luaL_Reg loadedlibs[] = {
   {"rksqlite", luaopen_rksqlite},
   {"rksocket", luaopen_socketdriver},
   {"rkutil", luaopen_rkutil},
-  {"rkrpc", luaopen_rkrpc},
 
   {NULL, NULL}
 };
@@ -83,11 +82,10 @@ LUALIB_API void lua_preload_zip(lua_State *L, char *path) {
 	char *cmd = "zip=rkunzip.open(_self_path) " \
     "ziplist=rkunzip.list(zip) " \
     "if ziplist ~= nil then " \
-    "print(\"preloading from zip\")" \
+    "print(\"preloading modules from zip...\")" \
     "for i,v in pairs(ziplist) do " \
     "data= rkunzip.extract(zip,v)" \
     "if data ~= nil then " \
-    "print(v)" \
     "package.preload[v] = function() " \
     "return load(data) " \
     "end " \

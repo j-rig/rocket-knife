@@ -138,7 +138,7 @@ $(OBJ)/%.o: ./rk/%.c
 	$(X86GCC) $(LUADEF) $(RKINC) $(X86CFLAGS) -o $@ -c $<
 
 RKLUAO= rklinit.o rkcrypt.o rkcompress.o rkunzip.o rksqlite.o \
-	rw_it.o netstring.o socketdriver.o rkutil.o rkrpc.o
+	rw_it.o netstring.o socketdriver.o rkutil.o
 
 $(OBJ)/rklua.a: $(addprefix $(OBJ)/, $(RKLUAO))
 	ar rvs $@ $^
