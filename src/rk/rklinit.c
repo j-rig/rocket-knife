@@ -83,11 +83,13 @@ LUALIB_API void lua_preload_zip(lua_State *L, char *path) {
     "ziplist=rkunzip.list(zip) " \
     "if ziplist ~= nil then " \
     "print(\"preloading modules from zip...\")" \
+    "data={} "\
     "for i,v in pairs(ziplist) do " \
-    "data= rkunzip.extract(zip,v)" \
-    "if data ~= nil then " \
+    "data[i]= rkunzip.extract(zip,v)" \
+    "if data[i] ~= nil then " \
     "package.preload[v] = function() " \
-    "return load(data) " \
+    "fn=load(data[i]) " \
+    "return fn() " \
     "end " \
     "end " \
     "end " \
