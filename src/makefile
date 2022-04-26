@@ -152,7 +152,7 @@ $(MACBIN)/rk: $(MACBIN)/rk_ $(DBUILD)/lua.zip
 
 # lua zip
 ###########################################################################
-RKLUAC= rkbasic.luac rkbasic2.luac rkbasic3.luac
+RKLUAC= rkbasic.luac rkrpc.luac
 
 $(DLUAC)/%.luac: ./rklua/%.lua
 	$(MACBIN)/luac -o $@ $^

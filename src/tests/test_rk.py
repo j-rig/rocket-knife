@@ -62,3 +62,9 @@ class rk_tests(unittest.TestCase):
             with open(os.environ['TEST_ZIP'],'r') as fhi:
                 fho.write(fhi.read())
         self.lua('test_unzip.lua')
+
+    def test_rkbasic(self):
+        self.lua('test_rkbasic.lua')
+
+    def test_rkrpc(self):
+        self.lua('test_rkrpc.lua')
