@@ -1,5 +1,7 @@
 local rkrpc = {}
 
+math.randomseed()
+
 function rkrpc.pack_flat_table(t)
   local buff=""
   local count=0
@@ -26,13 +28,26 @@ function rkrpc.unpack_flat_table(buff)
   return result
 end
 
+function rkrpc.comp(buff)
+  local comp_buff=rkcompress.compress(buff)
+  if comp_buff == nil then
+    return buff
+  end
+  return comp_buff
+end
+
+function rkrpc.decomp(len, buff)
+  if string.len(buff)==len then
+    return buff
+  end
+  local decomp_buff=rkcompress.decompress(len, buff)
+  return decomp_buff
+end
+
 function rkrpc.pack(enc_ctx, t)
   local raw_buff= rkrpc.pack_flat_table(t)
-  local comp_buff=rkcompress.compress(raw_buff)
-  if comp_buff == nil then
-    comp_buff=raw_buff
-  end
-  local buff=string.pack("<fls", math.random(), string.len(raw_buff), comp_buff)
+  local comp_buff=rkrpc.comp(raw_buff)
+  local buff=string.pack("<BLs", math.random(0,255), string.len(raw_buff), comp_buff)
   local enc_buff=rkcrypt.encrypt(enc_ctx, buff)
   return string.pack("<Ls", string.len(buff), enc_buff)
 end
@@ -40,12 +55,8 @@ end
 function rkrpc.unpack(enc_ctx, buff)
   local buff_len, enc_buff= string.unpack("<Ls", buff)
   local dec_buff= rkcrypt.decrypt(enc_ctx, buff_len, enc_buff)
-  local rand, buff_size, comp_buff= string.unpack("<fLs", dec_buff)
-  if buff_size == string.len(comp_buff) then
-    local buff=comp_buff
-  else
-    local buff=rkcompress.decompress(buff_size, comp_buff)
-  end
+  local rand, buff_size, comp_buff= string.unpack("<BLs", dec_buff)
+  local buff=rkrpc.decomp(buff_size, comp_buff)
   return rkrpc.unpack_flat_table(buff)
 end
 

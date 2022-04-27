@@ -25,6 +25,6 @@ t={}
 t["hello"]="world"
 
 dat=rkrpc.pack(enc_ctx, t)
---t_out=rkrpc.unpack(enc_ctx, dat)
+t_out=rkrpc.unpack(enc_ctx, dat)
 
---assert(t_out["hello"]=="world")
+assert(t_out["hello"]=="world")
