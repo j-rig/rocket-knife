@@ -12,6 +12,7 @@
 #include <lauxlib.h>
 
 #include <junzip.h>
+#include <arpa/inet.h>
 
 struct zip_ctx {
    lua_State *L;
@@ -21,10 +22,11 @@ struct zip_ctx {
 };
 
 unsigned long scan_for_offset(lua_State *L, JZFile *zip){
-  luaL_Buffer lb;
-  const char *buff;
+  //luaL_Buffer lb;
+  //const char *buff;
   int top;
-  unsigned long i, offset=0;
+  unsigned long i=0, offset=0;
+  uint32_t j=0;
   JZEndRecord er;
 
   top=lua_gettop(L);
@@ -39,10 +41,13 @@ unsigned long scan_for_offset(lua_State *L, JZFile *zip){
   }
   if(er.zipCommentLength){
     fprintf(stderr,"zip comment length %u.\n", er.zipCommentLength);
-    buff =  luaL_buffinitsize(L, &lb, er.zipCommentLength+1);
-    memset((void*) buff, 0, 1);
-    zip->read(zip, (void *) buff, er.zipCommentLength);
-    sscanf(buff, "%lu", &offset);
+    //buff =  luaL_buffinitsize(L, &lb, er.zipCommentLength+1);
+    //memset((void*) buff, 0, 1);
+    //zip->read(zip, (void *) buff, er.zipCommentLength);
+    //sscanf(buff, "%lu", &offset);
+    assert(er.zipCommentLength==sizeof(uint32_t));
+    zip->read(zip, (void *) &j, sizeof(uint32_t));
+    offset=ntohl(j);
     if(offset)fprintf(stderr,"zip archive offset from comment: %lu.\n", offset);
   }
   lua_settop(L, top);

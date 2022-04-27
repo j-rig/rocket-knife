@@ -52,12 +52,14 @@ function rkrpc.pack(enc_ctx, t)
   local comp_buff=rkrpc.comp(raw_buff)
   local buff=string.pack("<BLs", math.random(0,255), string.len(raw_buff), comp_buff)
   local enc_buff=rkcrypt.encrypt(enc_ctx, buff)
-  return string.pack("<Ls", string.len(buff), enc_buff)
+  --return string.pack("<Ls", string.len(buff), enc_buff)
+  return enc_buff
 end
 
 function rkrpc.unpack(enc_ctx, buff)
-  local buff_len, enc_buff= string.unpack("<Ls", buff)
-  local dec_buff= rkcrypt.decrypt(enc_ctx, buff_len, enc_buff)
+  --local buff_len, enc_buff= string.unpack("<Ls", buff)
+  --local dec_buff= rkcrypt.decrypt(enc_ctx, buff_len, enc_buff)
+  dec_buff= rkcrypt.decrypt(enc_ctx, string.len(buff), buff)
   local rand, buff_size, comp_buff= string.unpack("<BLs", dec_buff)
   local buff=rkrpc.decomp(buff_size, comp_buff)
   return rkrpc.unpack_flat_table(buff)
