@@ -63,11 +63,14 @@ class rk_tests(unittest.TestCase):
                 fho.write(fhi.read())
         self.lua('test_unzip.lua')
 
-    def test_rkbasic(self):
-        self.lua('test_rkbasic.lua')
+    # def test_rkbasic(self):
+    #     self.lua('test_rkbasic.lua')
 
     def test_rkrpc(self):
         self.lua('test_rkrpc.lua')
 
     def test_sig(self):
         self.lua('test_sig.lua')
+
+    def test_uuid(self):
+        self.lua('test_uuid.lua')

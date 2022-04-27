@@ -8,23 +8,21 @@ function rkrpc.pack_flat_table(t)
   for k, v in pairs(t) do
     k= tostring(k)
     v= tostring(v)
-    buff= buff..string.pack("<ss", k,v)
+    buff= buff..string.pack("<Bss", math.random(0,255), k,v)
     count=count+1
   end
   crc=rkutil.update_crc(0, buff)
-  return string.pack("<HL", count, crc)..buff
+  return string.pack("<BHL", math.random(0,255), count, crc)..buff
 end
 
 function rkrpc.unpack_flat_table(buff)
   local result={}
-  local offset=0
   local i=0
-  local count=0
-  count, crc, offset = string.unpack("<HL", buff)
+  local rand, count, crc, offset = string.unpack("<BHL", buff)
   crc_now=rkutil.update_crc(0,string.sub(buff,offset))
   assert(crc==crc_now)
   while i < count do
-    k, v, offset= string.unpack("<ss",buff, offset)
+    rand, k, v, offset= string.unpack("<Bss",buff, offset)
     result[k]=v
     i=i+1
   end
@@ -67,7 +65,7 @@ end
 
 function rkrpc.send(sock, enc_ctx, t)
   local enc_buff=rkrpc.pack(enc_ctx, t)
-  return rksocket.tcp_send_netstring(sock, enc_buff)
+  return rksocket.tcp_write_netstring(sock, enc_buff)
 end
 
 function rkrpc.recv(sock, enc_ctx)

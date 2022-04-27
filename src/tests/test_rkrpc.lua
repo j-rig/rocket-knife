@@ -1,9 +1,9 @@
 rkrpc= require "rkrpc"
 
-print(rkrpc)
-for k,v in pairs(rkrpc) do
-  print(k,v)
-end
+--print(rkrpc)
+--for k,v in pairs(rkrpc) do
+--  print(k,v)
+--end
 
 msg = ""
 for i=1,10000 do
