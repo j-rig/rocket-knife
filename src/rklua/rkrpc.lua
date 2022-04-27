@@ -11,7 +11,8 @@ function rkrpc.pack_flat_table(t)
     buff= buff..string.pack("<ss", k,v)
     count=count+1
   end
-  return string.pack("<H", count)..buff
+  crc=rkutil.update_crc(0, buff)
+  return string.pack("<HL", count, crc)..buff
 end
 
 function rkrpc.unpack_flat_table(buff)
@@ -19,7 +20,9 @@ function rkrpc.unpack_flat_table(buff)
   local offset=0
   local i=0
   local count=0
-  count, offset = string.unpack("<H", buff)
+  count, crc, offset = string.unpack("<HL", buff)
+  crc_now=rkutil.update_crc(0,string.sub(buff,offset))
+  assert(crc==crc_now)
   while i < count do
     k, v, offset= string.unpack("<ss",buff, offset)
     result[k]=v

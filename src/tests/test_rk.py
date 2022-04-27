@@ -68,3 +68,6 @@ class rk_tests(unittest.TestCase):
 
     def test_rkrpc(self):
         self.lua('test_rkrpc.lua')
+
+    def test_sig(self):
+        self.lua('test_sig.lua')

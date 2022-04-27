@@ -17,6 +17,9 @@
 #include <sys/wait.h>
 #include <err.h>
 
+
+#include <crc32.h>
+
 int l_sleep(lua_State *L)
 {
 	usleep((useconds_t)(luaL_checknumber(L, 1) * 1000000.0));
@@ -101,12 +104,25 @@ int l_fork(lua_State *L)
 	return 1;
 }
 
+int l_update_crc(lua_State *L)
+{
+	unsigned long crc;
+	unsigned char *buff;
+	size_t bufflen;
+
+	crc=luaL_checkinteger(L, 1);
+	buff = (unsigned char *)luaL_checklstring(L, 2, &bufflen);
+	lua_pushinteger(L, update_crc(crc, buff, bufflen));
+	return 1;
+}
+
 static const struct luaL_Reg rkutil_reg[] = {
 	{ "sleep",		 l_sleep	       },
 	{ "subprocess_start",	 l_subprocess_start    },
 	{ "subprocess_is_alive", l_subprocess_is_alive },
 	{ "setenv",		 l_setenv	       },
 	{ "fork",		 l_fork		       },
+	{ "update_crc",		 l_update_crc		       },
 	{ NULL,			 NULL		       }
 };
 

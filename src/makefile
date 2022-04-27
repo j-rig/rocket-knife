@@ -63,6 +63,18 @@ $(MACBIN)/luac: $(OBJ)/luac.o $(OBJ)/lua.a
 	$(X86GCC) $(LUADEF) -I./3rd/lua/src $(X86CFLAGS) \
 	-o $@ $^ $(addprefix $(OBJ)/, $(LUAO))
 
+#misc lib
+###########################################################################
+./3rd/misc/%.c: ./3rd/misc/%.h
+
+$(OBJ)/%.o: ./3rd/misc/%.c
+	$(X86GCC) -I./3rd/misc $(X86CFLAGS) -o $@ -c $<
+
+MISCLIBO= md5.o crc32.o
+
+$(OBJ)/misc.a: $(addprefix $(OBJ)/, $(MISCLIBO))
+	ar rvs $@ $^
+
 #blowfish lib
 ###########################################################################
 ./3rd/bfsh-koc/%.c: ./3rd/bfsh-koc/%.h
@@ -133,18 +145,19 @@ RKINC+= -I./3rd/bfsh-koc
 RKINC+= -I./3rd/junzip
 RKINC+= -I./3rd/sqlite-amalgamation
 RKINC+= -I./3rd/rk
+RKINC+= -I./3rd/misc
 
 $(OBJ)/%.o: ./rk/%.c
 	$(X86GCC) $(LUADEF) $(RKINC) $(X86CFLAGS) -o $@ -c $<
 
 RKLUAO= rklinit.o rkcrypt.o rkcompress.o rkunzip.o rksqlite.o \
-	rw_it.o netstring.o socketdriver.o rkutil.o
+	rw_it.o netstring.o socketdriver.o rkutil.o rkmd5.o
 
 $(OBJ)/rklua.a: $(addprefix $(OBJ)/, $(RKLUAO))
 	ar rvs $@ $^
 
 $(MACBIN)/rk_: $(OBJ)/rklua.o $(OBJ)/lua.a $(OBJ)/rklua.a \
-	$(OBJ)/blowfish.a $(OBJ)/minilzo.a $(OBJ)/sqlite3.a $(OBJ)/junzip.a
+	$(OBJ)/blowfish.a $(OBJ)/minilzo.a $(OBJ)/sqlite3.a $(OBJ)/junzip.a $(OBJ)/misc.a
 	$(X86GCC) $(LUADEF) $(RKINC) $(X86CFLAGS) -o $@ $^; \
 
 $(MACBIN)/rk: $(MACBIN)/rk_ $(DBUILD)/lua.zip
